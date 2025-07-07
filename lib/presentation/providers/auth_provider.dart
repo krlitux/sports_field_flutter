@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sports_field_app/data/clients/auth_dio.dart';
+import 'package:dio/dio.dart';
+import 'package:sports_field_app/data/repositories/cancha_repository.dart';
+import 'package:sports_field_app/data/repositories/reserva_repository.dart';
 import 'package:sports_field_app/data/repositories/auth_repository_impl.dart';
 
 final storageProvider = Provider((ref) => const FlutterSecureStorage());
@@ -24,3 +27,18 @@ final authRepositoryProvider = Provider(
     orElse: () => Dio(), // fallback seguro
   ), ref.watch(storageProvider)),
 );
+
+final authDioProvider = Provider((ref) {
+  final storage = FlutterSecureStorage();
+  return AuthDio(storage, baseUrl: 'http://10.0.2.2:3000');
+});
+
+final canchaRepositoryProvider = Provider((ref) {
+  final authDio = ref.read(authDioProvider);
+  return CanchaRepository(authDio);
+});
+
+final reservaRepositoryProvider = Provider((ref) {
+  final authDio = ref.read(authDioProvider);
+  return ReservaRepository(authDio);
+});

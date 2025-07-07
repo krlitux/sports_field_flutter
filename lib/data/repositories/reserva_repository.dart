@@ -1,21 +1,21 @@
-import 'package:dio/dio.dart';
-import 'package:sports_field_app/data/models/reserva_request_model.dart';
+import 'package:sports_field_app/data/clients/auth_dio.dart';
 import 'package:sports_field_app/data/models/reserva_model.dart';
-
+import 'package:sports_field_app/data/models/reserva_request_model.dart';
 
 class ReservaRepository {
-  final Dio _dio;
+  final AuthDio _authDio;
 
-  ReservaRepository(this._dio);
+  ReservaRepository(this._authDio);
 
   Future<void> crearReserva(ReservaRequestModel reserva) async {
-    await _dio.post('/api/reservas', data: reserva.toJson());
+    final dio = await _authDio.client;
+    await dio.post('/api/reservas', data: reserva.toJson());
   }
 
   Future<List<ReservaModel>> obtenerMisReservas() async {
-    final response = await _dio.get('/api/reservas/mis-reservas');
-    final data = response.data as List;
-    return data.map((json) => ReservaModel.fromJson(json)).toList();
+    final dio = await _authDio.client;
+    final resp = await dio.get('/api/reservas/mis-reservas');
+    final list = resp.data as List;
+    return list.map((e) => ReservaModel.fromJson(e)).toList();
   }
-
 }

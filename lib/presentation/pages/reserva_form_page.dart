@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sports_field_app/data/models/reserva_request_model.dart';
 import 'package:sports_field_app/data/models/cancha_model.dart';
-import 'package:sports_field_app/presentation/providers/reserva_provider.dart';
+import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 
 class ReservaFormPage extends ConsumerStatefulWidget {
   final CanchaModel cancha;
@@ -56,7 +56,7 @@ class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
     }
 
     // Enviar reserva
-    final repo = await ref.read(reservaRepositoryProvider.future);
+    final repo = await ref.read(reservaRepositoryProvider);
     final reserva = ReservaRequestModel(
       canchaId: widget.cancha.id,
       fecha: DateFormat('yyyy-MM-dd').format(fecha!),

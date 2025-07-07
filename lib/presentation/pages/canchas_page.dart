@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
-
 import 'cancha_detalle_page.dart';
 
 class CanchasPage extends ConsumerWidget {

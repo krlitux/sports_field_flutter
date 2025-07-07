@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/presentation/pages/home_page.dart';
 import 'package:sports_field_app/presentation/pages/login_page.dart';
-import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));

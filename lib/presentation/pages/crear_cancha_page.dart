@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/data/models/cancha_request_model.dart';
-import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
+import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 
 class CrearCanchaPage extends ConsumerStatefulWidget {
   const CrearCanchaPage({super.key});
@@ -21,7 +21,7 @@ class _CrearCanchaPageState extends ConsumerState<CrearCanchaPage> {
   void guardar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final repo = await ref.read(canchaRepositoryProvider.future);
+    final repo = await ref.read(canchaRepositoryProvider);
     final cancha = CanchaRequestModel(
       nombre: _nombreCtrl.text,
       direccion: _direccionCtrl.text,
