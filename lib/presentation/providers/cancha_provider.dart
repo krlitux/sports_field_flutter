@@ -6,3 +6,8 @@ final canchasDisponiblesProvider = FutureProvider<List<CanchaModel>>((ref) async
   final repo = ref.read(canchaRepositoryProvider);
   return repo.listarCanchas();
 });
+
+final misCanchasProvider = FutureProvider<List<CanchaModel>>((ref) async {
+  final repo = ref.read(canchaRepositoryProvider);
+  return repo.misCanchas();
+});
