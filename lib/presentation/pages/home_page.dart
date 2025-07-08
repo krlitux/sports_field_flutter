@@ -3,9 +3,9 @@ import 'package:sports_field_app/presentation/pages/canchas_page.dart';
 import 'package:sports_field_app/presentation/pages/login_page.dart';
 import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'crear_cancha_page.dart';
 import 'historial_reservas_page.dart';
+import 'mis_canchas_pages.dart';
 
 class HomePage extends ConsumerWidget {
 
@@ -59,6 +59,15 @@ class HomePage extends ConsumerWidget {
                   );
                 },
                 child: const Text('Crear nueva cancha'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MisCanchasPage()),
+                  );
+                },
+                child: const Text('Ver mis canchas'),
               ),
             ],
 
