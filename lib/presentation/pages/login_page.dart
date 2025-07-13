@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/data/models/login_request_model.dart';
 import 'package:sports_field_app/presentation/pages/home_page.dart';
 import 'package:sports_field_app/presentation/providers/auth_provider.dart';
-import '../../main.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -15,7 +14,7 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
-  String tipo = 'jugador'; // o 'proveedor'
+  String tipo = 'jugador';
   bool loading = false;
   String? error;
 
@@ -33,11 +32,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     try {
       await authRepo.login(request, tipo);
-
-      Navigator.pushAndRemoveUntil(
+      if (!mounted) return;
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MyApp()), // fuerza reinicio de flujo
-            (_) => false,
+        MaterialPageRoute(builder: (_) => HomePage(tipoUsuario: tipo)),
       );
     } catch (e) {
       setState(() {
@@ -53,28 +51,77 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Iniciar sesión')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            DropdownButton<String>(
-              value: tipo,
-              items: const [
-                DropdownMenuItem(value: 'jugador', child: Text('Jugador')),
-                DropdownMenuItem(value: 'proveedor', child: Text('Proveedor')),
-              ],
-              onChanged: (val) => setState(() => tipo = val!),
+      backgroundColor: Colors.grey[100],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Card(
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Sports Field App', style: Theme.of(context).textTheme.headlineSmall),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: tipo,
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo de usuario',
+                      prefixIcon: Icon(Icons.person_outline),
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'jugador', child: Text('Jugador')),
+                      DropdownMenuItem(value: 'proveedor', child: Text('Proveedor')),
+                    ],
+                    onChanged: (val) => setState(() => tipo = val!),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _passController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Contraseña',
+                      prefixIcon: Icon(Icons.lock_outline),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(error!, style: const TextStyle(color: Colors.red)),
+                    ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: loading ? null : login,
+                      icon: const Icon(Icons.login),
+                      label: loading
+                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Text('Iniciar sesión'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: Colors.green[600],
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email')),
-            TextField(controller: _passController, decoration: const InputDecoration(labelText: 'Contraseña'), obscureText: true),
-            if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: loading ? null : login,
-              child: loading ? const CircularProgressIndicator() : const Text('Ingresar'),
-            ),
-          ],
+          ),
         ),
       ),
     );

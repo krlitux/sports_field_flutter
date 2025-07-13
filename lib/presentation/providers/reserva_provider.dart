@@ -1,29 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/repositories/reserva_repository.dart';
 import 'auth_provider.dart';
 import 'package:sports_field_app/data/models/reserva_model.dart';
-import 'package:sports_field_app/data/clients/auth_dio.dart';
-import 'package:sports_field_app/data/models/reserva_request_model.dart';
-import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 
-final misReservasProvider = FutureProvider<List<ReservaModel>>((ref) async {
-  final repo = ref.read(reservaRepositoryProvider);
-  return repo.obtenerMisReservas();
-});
+class MisReservasNotifier extends AsyncNotifier<List<ReservaModel>> {
+  late final ReservaRepository _repo;
 
-class ReservaRepository {
-  final AuthDio _authDio;
-
-  ReservaRepository(this._authDio);
-
-  Future<void> reservar(ReservaRequestModel reserva) async {
-    final dio = await _authDio.client;
-    await dio.post('/api/reservas', data: reserva.toJson());
+  @override
+  Future<List<ReservaModel>> build() async {
+    _repo = ref.read(reservaRepositoryProvider);
+    return _repo.obtenerMisReservas();
   }
 
-  Future<List<ReservaModel>> obtenerMisReservas() async {
-    final dio = await _authDio.client;
-    final resp = await dio.get('/api/reservas/mis-reservas');
-    final list = resp.data as List;
-    return list.map((e) => ReservaModel.fromJson(e)).toList();
+  Future<void> cancelarReserva(int id) async {
+    await _repo.cancelarReserva(id);
+    state = AsyncValue.loading();
+    final nuevas = await _repo.obtenerMisReservas();
+    state = AsyncValue.data(nuevas);
   }
 }
+
+final misReservasProvider =
+AsyncNotifierProvider<MisReservasNotifier, List<ReservaModel>>(() => MisReservasNotifier());
+

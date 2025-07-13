@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sports_field_app/data/models/reserva_request_model.dart';
 import 'package:sports_field_app/data/models/cancha_model.dart';
+import 'package:sports_field_app/data/models/reserva_request_model.dart';
 import 'package:sports_field_app/presentation/providers/auth_provider.dart';
+//import 'package:sports_field_app/presentation/providers/reserva_provider.dart';
 
 class ReservaFormPage extends ConsumerStatefulWidget {
   final CanchaModel cancha;
@@ -16,147 +17,172 @@ class ReservaFormPage extends ConsumerStatefulWidget {
 
 class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
   DateTime? fecha;
-  final _inicioCtrl = TextEditingController();
-  final _finCtrl = TextEditingController();
+  TimeOfDay? horaInicio;
+  TimeOfDay? horaFin;
   String? mensaje;
+  bool cargando = false;
 
-  void reservar() async {
-    final horaInicio = _inicioCtrl.text;
-    final horaFin = _finCtrl.text;
-
-    // Validaciones básicas
-    if (fecha == null || horaInicio.isEmpty || horaFin.isEmpty) {
-      setState(() => mensaje = 'Completá todos los campos');
-      return;
-    }
-
-    // Validar formato HH:mm
-    final regex = RegExp(r'^\d{2}:\d{2}$');
-    if (!regex.hasMatch(horaInicio) || !regex.hasMatch(horaFin)) {
-      setState(() => mensaje = 'Formato de hora inválido. Ej: 18:00');
-      return;
-    }
-
-    // Validar lógica de horario
-    final inicio = TimeOfDay(
-      hour: int.parse(horaInicio.split(':')[0]),
-      minute: int.parse(horaInicio.split(':')[1]),
+  Future<void> seleccionarFecha() async {
+    final ahora = DateTime.now();
+    final seleccionada = await showDatePicker(
+      context: context,
+      initialDate: ahora.add(const Duration(days: 1)),
+      firstDate: ahora,
+      lastDate: ahora.add(const Duration(days: 60)),
     );
-    final fin = TimeOfDay(
-      hour: int.parse(horaFin.split(':')[0]),
-      minute: int.parse(horaFin.split(':')[1]),
+    if (seleccionada != null) {
+      setState(() => fecha = seleccionada);
+    }
+  }
+
+  Future<void> seleccionarHoraInicio() async {
+    final seleccionada = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
     );
+    if (seleccionada != null) {
+      setState(() => horaInicio = seleccionada);
+    }
+  }
 
-    final inicioMinutos = inicio.hour * 60 + inicio.minute;
-    final finMinutos = fin.hour * 60 + fin.minute;
+  Future<void> seleccionarHoraFin() async {
+    final seleccionada = await showTimePicker(
+      context: context,
+      initialTime: horaInicio ?? TimeOfDay.now(),
+    );
+    if (seleccionada != null) {
+      setState(() => horaFin = seleccionada);
+    }
+  }
 
-    if (inicioMinutos >= finMinutos) {
-      setState(() => mensaje = 'La hora de inicio debe ser menor a la hora de fin');
+  Future<void> reservar() async {
+    setState(() {
+      mensaje = null;
+      cargando = true;
+    });
+
+    if (fecha == null || horaInicio == null || horaFin == null) {
+      setState(() {
+        mensaje = 'Por favor completá todos los campos.';
+        cargando = false;
+      });
       return;
     }
 
-    // Enviar reserva
-    final repo = await ref.read(reservaRepositoryProvider);
-    final reserva = ReservaRequestModel(
-      canchaId: widget.cancha.id,
+    if (horaFin!.hour < horaInicio!.hour ||
+        (horaFin!.hour == horaInicio!.hour && horaFin!.minute <= horaInicio!.minute)) {
+      setState(() {
+        mensaje = 'La hora de fin debe ser posterior a la de inicio.';
+        cargando = false;
+      });
+      return;
+    }
+
+    final usuarioId = await ref.read(authRepositoryProvider).getUserId();
+
+    final request = ReservaRequestModel(
+      usuario_id: int.parse(usuarioId ?? '0'),
+      cancha_id: widget.cancha.id,
       fecha: DateFormat('yyyy-MM-dd').format(fecha!),
-      horaInicio: horaInicio,
-      horaFin: horaFin,
+      hora_inicio: horaInicio!.format(context),
+      hora_fin: horaFin!.format(context),
     );
 
     try {
-      await repo.crearReserva(reserva);
-
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Reserva confirmada'),
-          content: const Text('¡Tu turno quedó reservado!'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-              child: const Text('Aceptar'),
-            )
-          ],
+      final repo = ref.read(reservaRepositoryProvider);
+      await repo.reservar(request);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Reserva realizada con éxito'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
         ),
       );
+      await Future.delayed(const Duration(milliseconds: 500));
+      Navigator.pop(context, true);
+
     } catch (e) {
-      setState(() => mensaje = '❌ Error al reservar: ${e.toString()}');
+      setState(() {
+        mensaje = 'Error al crear la reserva';
+      });
+    } finally {
+      setState(() => cargando = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final cancha = widget.cancha;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Reservar cancha')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: ListView(
           children: [
-            ListTile(
-              title: Text(fecha == null
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(cancha.nombre, style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 4),
+                    Text('Tipo: ${cancha.tipo}'),
+                    Text('Dirección: ${cancha.direccion}'),
+                    Text('Precio: \$${cancha.precio.toStringAsFixed(2)} por hora'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: seleccionarFecha,
+              icon: const Icon(Icons.date_range),
+              label: Text(fecha == null
                   ? 'Seleccionar fecha'
                   : DateFormat('dd/MM/yyyy').format(fecha!)),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () async {
-                final seleccion = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 30)),
-                );
-                if (seleccion != null) {
-                  setState(() => fecha = seleccion);
-                }
-              },
             ),
-            ListTile(
-              title: Text(
-                _inicioCtrl.text.isEmpty ? 'Seleccionar hora de inicio' : 'Inicio: ${_inicioCtrl.text}',
-              ),
-              trailing: const Icon(Icons.access_time),
-              onTap: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                );
-                if (picked != null) {
-                  final formatted = picked.format(context);
-                  final parsed = TimeOfDay(
-                    hour: picked.hour,
-                    minute: picked.minute,
-                  );
-                  setState(() {
-                    _inicioCtrl.text = parsed.hour.toString().padLeft(2, '0') +
-                        ':' +
-                        parsed.minute.toString().padLeft(2, '0');
-                  });
-                }
-              },
-            ),
-            ListTile(
-              title: Text(
-                _finCtrl.text.isEmpty ? 'Seleccionar hora de fin' : 'Fin: ${_finCtrl.text}',
-              ),
-              trailing: const Icon(Icons.access_time),
-              onTap: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                );
-                if (picked != null) {
-                  setState(() {
-                    _finCtrl.text = picked.hour.toString().padLeft(2, '0') +
-                        ':' +
-                        picked.minute.toString().padLeft(2, '0');
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: reservar, child: const Text('Confirmar reserva')),
             const SizedBox(height: 12),
-            if (mensaje != null) Text(mensaje!, style: const TextStyle(fontSize: 16)),
+            ElevatedButton.icon(
+              onPressed: seleccionarHoraInicio,
+              icon: const Icon(Icons.schedule),
+              label: Text(horaInicio == null
+                  ? 'Seleccionar hora de inicio'
+                  : horaInicio!.format(context)),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: seleccionarHoraFin,
+              icon: const Icon(Icons.schedule_outlined),
+              label: Text(horaFin == null
+                  ? 'Seleccionar hora de fin'
+                  : horaFin!.format(context)),
+            ),
+            if (mensaje != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  mensaje!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: cargando ? null : reservar,
+              icon: const Icon(Icons.check_circle_outline),
+              label: cargando
+                  ? const SizedBox(
+                  height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Confirmar reserva'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: Colors.green[600],
+              ),
+            ),
           ],
         ),
       ),
