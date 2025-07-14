@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sports_field_app/presentation/providers/reserva_proveedor_provider.dart';
+import '../providers/reserva_proveedor_provider.dart';
 
 class ReservasProveedorPage extends ConsumerWidget {
   const ReservasProveedorPage({super.key});
@@ -11,13 +11,13 @@ class ReservasProveedorPage extends ConsumerWidget {
     final reservasAsync = ref.watch(reservasProveedorProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reservas de mis canchas')),
+      appBar: AppBar(title: const Text('Reservas recibidas')),
       body: reservasAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (reservas) {
           if (reservas.isEmpty) {
-            return const Center(child: Text('No hay reservas aún.'));
+            return const Center(child: Text('No tienes reservas aún.'));
           }
 
           return ListView.separated(
@@ -27,22 +27,22 @@ class ReservasProveedorPage extends ConsumerWidget {
             itemBuilder: (context, i) {
               final r = reservas[i];
               final f = DateFormat('dd/MM/yyyy').format(DateTime.parse(r.fecha));
-              final hInicio = r.horaInicio.substring(0, 5);
-              final hFin = r.horaFin.substring(0, 5);
+              final hInicio = r.horaInicio.split(':').take(2).join(':');
+              final hFin = r.horaFin.split(':').take(2).join(':');
 
               return Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
-                  title: Text(r.cancha.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(r.usuario?.nombre ?? 'Usuario', style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 6),
                       Text('📅 $f'),
                       Text('🕒 $hInicio - $hFin'),
-                      Text('👤 ${r.usuario?.nombre ?? 'Jugador desconocido'}', style: const TextStyle(color: Colors.grey)),
+                      Text('📍 ${r.cancha?.nombre ?? '-'} (${r.cancha?.direccion ?? ''})'),
                     ],
                   ),
                 ),

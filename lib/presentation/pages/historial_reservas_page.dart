@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sports_field_app/presentation/providers/reserva_provider.dart';
+import 'package:sports_field_app/presentation/providers/reserva_jugador_provider.dart';
 
 class HistorialReservasPage extends ConsumerWidget {
   const HistorialReservasPage({super.key});

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/data/models/cancha_model.dart';
 import 'package:sports_field_app/data/models/cancha_request_model.dart';
-import 'package:sports_field_app/presentation/providers/auth_provider.dart';
+import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
 
 class EditarCanchaPage extends ConsumerStatefulWidget {
   final CanchaModel cancha;
@@ -14,49 +14,40 @@ class EditarCanchaPage extends ConsumerStatefulWidget {
 }
 
 class _EditarCanchaPageState extends ConsumerState<EditarCanchaPage> {
-  late TextEditingController nombreController;
-  late TextEditingController direccionController;
-  late TextEditingController precioController;
-  String tipo = 'sintético';
-  bool loading = false;
-  String? mensaje;
+  late TextEditingController nombreCtrl;
+  late TextEditingController direccionCtrl;
+  late TextEditingController precioCtrl;
+  late String tipo;
+  bool cargando = false;
 
   @override
   void initState() {
     super.initState();
-    nombreController = TextEditingController(text: widget.cancha.nombre);
-    direccionController = TextEditingController(text: widget.cancha.direccion);
-    precioController = TextEditingController(text: widget.cancha.precio.toStringAsFixed(2));
+    nombreCtrl = TextEditingController(text: widget.cancha.nombre);
+    direccionCtrl = TextEditingController(text: widget.cancha.direccion);
+    precioCtrl = TextEditingController(text: widget.cancha.precio.toString());
     tipo = widget.cancha.tipo;
   }
 
-  void guardarCambios() async {
-    setState(() {
-      loading = true;
-      mensaje = null;
-    });
+  void guardar() async {
+    setState(() => cargando = true);
 
-    final repo = ref.read(canchaRepositoryProvider);
-    final canchaActualizada = CanchaRequestModel(
-      nombre: nombreController.text,
-      direccion: direccionController.text,
+    final canchaEditada = CanchaRequestModel(
+      nombre: nombreCtrl.text,
+      direccion: direccionCtrl.text,
       tipo: tipo,
-      precio: double.tryParse(precioController.text) ?? 0,
+      precio: double.tryParse(precioCtrl.text) ?? 0,
     );
 
-    try {
-      await repo.editarCancha(widget.cancha.id, canchaActualizada);
+    await ref
+        .read(misCanchasProvider.notifier)
+        .editarCancha(widget.cancha.id, canchaEditada);
 
-      if (!mounted) return;
-      Navigator.pop(context, true);
-    } catch (e) {
-      setState(() {
-        mensaje = 'Error al guardar los cambios';
-      });
-    } finally {
-      setState(() {
-        loading = false;
-      });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Cancha actualizada exitosamente')),
+      );
+      Navigator.pop(context);
     }
   }
 
@@ -64,73 +55,56 @@ class _EditarCanchaPageState extends ConsumerState<EditarCanchaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Editar cancha')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(controller: nombreController, decoration: const InputDecoration(labelText: 'Nombre')),
-            TextField(controller: direccionController, decoration: const InputDecoration(labelText: 'Dirección')),
-            DropdownButton<String>(
+            const Text('Actualiza los datos de tu cancha',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: nombreCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nombre',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: direccionCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Dirección',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
               value: tipo,
               items: const [
-                DropdownMenuItem(value: 'sintetico', child: Text('Sintetico')),
-                DropdownMenuItem(value: 'natural', child: Text('Natural')),
+                DropdownMenuItem(value: 'natural', child: Text('Pasto natural')),
+                DropdownMenuItem(value: 'sintetico', child: Text('Pasto sintético')),
               ],
               onChanged: (val) => setState(() => tipo = val!),
+              decoration: const InputDecoration(
+                labelText: 'Tipo de césped',
+                border: OutlineInputBorder(),
+              ),
             ),
+            const SizedBox(height: 12),
             TextField(
-              controller: precioController,
-              decoration: const InputDecoration(labelText: 'Precio por hora'),
+              controller: precioCtrl,
               keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Precio por hora (S/.)',
+                border: OutlineInputBorder(),
+              ),
             ),
-            const SizedBox(height: 16),
-            if (mensaje != null) Text(mensaje!, style: const TextStyle(color: Colors.red)),
-            ElevatedButton(
-              onPressed: loading ? null : guardarCambios,
-              child: loading ? const CircularProgressIndicator() : const Text('Guardar cambios'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: loading
-                  ? null
-                  : () async {
-                final confirmacion = await showDialog<bool>(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text('¿Eliminar cancha?'),
-                    content: const Text('Esta acción no se puede deshacer.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancelar'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (confirmacion != true) return;
-
-                setState(() => loading = true);
-                final repo = ref.read(canchaRepositoryProvider);
-
-                try {
-                  await repo.eliminarCancha(widget.cancha.id);
-                  if (!mounted) return;
-                  Navigator.pop(context, true);
-                } catch (e) {
-                  setState(() {
-                    mensaje = 'Error al eliminar la cancha';
-                  });
-                } finally {
-                  setState(() => loading = false);
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Eliminar cancha'),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: cargando ? null : guardar,
+              icon: const Icon(Icons.save),
+              label: Text(cargando ? 'Guardando...' : 'Guardar cambios'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
           ],
         ),

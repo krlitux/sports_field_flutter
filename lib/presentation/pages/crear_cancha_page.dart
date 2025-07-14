@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/data/models/cancha_request_model.dart';
-import 'package:sports_field_app/presentation/providers/auth_provider.dart';
+import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
 
 class CrearCanchaPage extends ConsumerStatefulWidget {
   const CrearCanchaPage({super.key});
@@ -11,83 +11,87 @@ class CrearCanchaPage extends ConsumerStatefulWidget {
 }
 
 class _CrearCanchaPageState extends ConsumerState<CrearCanchaPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _nombreCtrl = TextEditingController();
-  final _direccionCtrl = TextEditingController();
-  final _tipoCtrl = TextEditingController();
-  final _precioCtrl = TextEditingController();
-  String? mensaje;
+  final nombreCtrl = TextEditingController();
+  final direccionCtrl = TextEditingController();
+  final precioCtrl = TextEditingController();
+  String tipo = 'natural';
+  bool cargando = false;
 
   void guardar() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final repo = await ref.read(canchaRepositoryProvider);
+    setState(() => cargando = true);
     final cancha = CanchaRequestModel(
-      nombre: _nombreCtrl.text,
-      direccion: _direccionCtrl.text,
-      tipo: _tipoCtrl.text,
-      precio: double.parse(_precioCtrl.text),
+      nombre: nombreCtrl.text,
+      direccion: direccionCtrl.text,
+      tipo: tipo,
+      precio: double.tryParse(precioCtrl.text) ?? 0,
     );
 
-    try {
-      await repo.crearCancha(cancha);
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Éxito'),
-          content: const Text('La cancha fue creada correctamente.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
-              child: const Text('Aceptar'),
-            )
-          ],
-        ),
+    await ref.read(misCanchasProvider.notifier).crearCancha(cancha);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Cancha creada exitosamente')),
       );
-    } catch (e) {
-      setState(() => mensaje = '❌ Error al crear cancha: ${e.toString()}');
+      Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear nueva cancha')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _nombreCtrl,
-                decoration: const InputDecoration(labelText: 'Nombre'),
-                validator: (v) => v!.isEmpty ? 'Obligatorio' : null,
+      appBar: AppBar(title: const Text('Crear cancha')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Text('Completa los datos de tu cancha',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: nombreCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nombre',
+                border: OutlineInputBorder(),
               ),
-              TextFormField(
-                controller: _direccionCtrl,
-                decoration: const InputDecoration(labelText: 'Dirección'),
-                validator: (v) => v!.isEmpty ? 'Obligatorio' : null,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: direccionCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Dirección',
+                border: OutlineInputBorder(),
               ),
-              TextFormField(
-                controller: _tipoCtrl,
-                decoration: const InputDecoration(labelText: 'Tipo (césped, sintética, etc)'),
-                validator: (v) => v!.isEmpty ? 'Obligatorio' : null,
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: tipo,
+              items: const [
+                DropdownMenuItem(value: 'natural', child: Text('Pasto natural')),
+                DropdownMenuItem(value: 'sintetico', child: Text('Pasto sintético')),
+              ],
+              onChanged: (val) => setState(() => tipo = val!),
+              decoration: const InputDecoration(
+                labelText: 'Tipo de césped',
+                border: OutlineInputBorder(),
               ),
-              TextFormField(
-                controller: _precioCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Precio por hora'),
-                validator: (v) => v!.isEmpty || double.tryParse(v) == null
-                    ? 'Debe ser un número válido'
-                    : null,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: precioCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Precio por hora (S/.)',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(onPressed: guardar, child: const Text('Guardar cancha')),
-              const SizedBox(height: 10),
-              if (mensaje != null) Text(mensaje!, style: const TextStyle(color: Colors.red)),
-            ],
-          ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: cargando ? null : guardar,
+              icon: const Icon(Icons.check),
+              label: Text(cargando ? 'Guardando...' : 'Guardar'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            ),
+          ],
         ),
       ),
     );

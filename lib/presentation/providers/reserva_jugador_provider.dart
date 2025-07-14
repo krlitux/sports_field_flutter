@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/repositories/reserva_repository.dart';
-import 'auth_provider.dart';
 import 'package:sports_field_app/data/models/reserva_model.dart';
+import 'package:sports_field_app/data/repositories/reserva_repository.dart';
+import 'auth_provider.dart';
 
 class MisReservasNotifier extends AsyncNotifier<List<ReservaModel>> {
   late final ReservaRepository _repo;
@@ -20,6 +20,6 @@ class MisReservasNotifier extends AsyncNotifier<List<ReservaModel>> {
   }
 }
 
-final misReservasProvider =
-AsyncNotifierProvider<MisReservasNotifier, List<ReservaModel>>(() => MisReservasNotifier());
-
+final misReservasProvider = AsyncNotifierProvider<MisReservasNotifier, List<ReservaModel>>(
+      () => MisReservasNotifier(),
+);
