@@ -1,20 +1,23 @@
 class ReservaRequestModel {
-  final int canchaId;
+  final int usuario_id;
+  final int cancha_id;
   final String fecha;
-  final String horaInicio;
-  final String horaFin;
+  final String hora_inicio;
+  final String hora_fin;
 
   ReservaRequestModel({
-    required this.canchaId,
+    required this.usuario_id,
+    required this.cancha_id,
     required this.fecha,
-    required this.horaInicio,
-    required this.horaFin,
+    required this.hora_inicio,
+    required this.hora_fin,
   });
 
   Map<String, dynamic> toJson() => {
-    'cancha_id': canchaId,
+    'usuario_id': usuario_id,
+    'cancha_id': cancha_id,
     'fecha': fecha,
-    'hora_inicio': horaInicio,
-    'hora_fin': horaFin,
+    'hora_inicio': hora_inicio,
+    'hora_fin': hora_fin,
   };
 }

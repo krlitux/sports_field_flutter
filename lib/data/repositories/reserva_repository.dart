@@ -7,7 +7,7 @@ class ReservaRepository {
 
   ReservaRepository(this._authDio);
 
-  Future<void> crearReserva(ReservaRequestModel reserva) async {
+  Future<void> reservar(ReservaRequestModel reserva) async {
     final dio = await _authDio.client;
     await dio.post('/api/reservas', data: reserva.toJson());
   }
@@ -18,4 +18,10 @@ class ReservaRepository {
     final list = resp.data as List;
     return list.map((e) => ReservaModel.fromJson(e)).toList();
   }
+
+  Future<void> cancelarReserva(int id) async {
+    final dio = await _authDio.client;
+    await dio.delete('/api/reservas/$id');
+  }
+
 }

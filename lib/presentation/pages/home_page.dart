@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sports_field_app/presentation/pages/canchas_page.dart';
 import 'package:sports_field_app/presentation/pages/login_page.dart';
+import 'package:sports_field_app/presentation/pages/reservas_proveedor_page.dart';
 import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'crear_cancha_page.dart';
@@ -68,6 +69,15 @@ class HomePage extends ConsumerWidget {
                   );
                 },
                 child: const Text('Ver mis canchas'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReservasProveedorPage()),
+                  );
+                },
+                child: const Text('Ver reservas'),
               ),
             ],
 
