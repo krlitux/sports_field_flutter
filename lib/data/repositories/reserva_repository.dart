@@ -24,4 +24,11 @@ class ReservaRepository {
     await dio.delete('/api/reservas/$id');
   }
 
+  Future<List<ReservaModel>> obtenerReservasProveedor() async {
+    final dio = await _authDio.client;
+    final response = await dio.get('/api/reservas/por-proveedor');
+    final data = response.data as List;
+    return data.map((e) => ReservaModel.fromJson(e)).toList();
+  }
+
 }

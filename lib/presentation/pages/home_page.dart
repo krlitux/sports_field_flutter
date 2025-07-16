@@ -4,9 +4,9 @@ import 'package:sports_field_app/presentation/pages/login_page.dart';
 import 'package:sports_field_app/presentation/pages/reservas_proveedor_page.dart';
 import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'crear_cancha_page.dart';
-import 'historial_reservas_page.dart';
-import 'mis_canchas_pages.dart';
+import 'package:sports_field_app/presentation/pages/crear_cancha_page.dart';
+import 'package:sports_field_app/presentation/pages/historial_reservas_page.dart';
+import 'package:sports_field_app/presentation/pages/mis_canchas_pages.dart';
 
 class HomePage extends ConsumerWidget {
 
