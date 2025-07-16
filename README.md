@@ -2,7 +2,7 @@
 
 Aplicación móvil para reservar canchas deportivas y gestionar campos, desarrollada con Flutter. Forma parte del MVP del proyecto Sports Field, en conjunto con el backend Node.js + Sequelize.
 
-![Interfaz](.sportsFieldApp.png)
+![Interfaz](./sportsFieldApp.png)
 
 ## 📱 Características principales
 ### 👤 Jugador
