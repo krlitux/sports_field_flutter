@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../providers/reserva_proveedor_provider.dart';
+import 'package:sports_field_app/presentation/providers/reserva_proveedor_provider.dart';
 
 class ReservasProveedorPage extends ConsumerWidget {
   const ReservasProveedorPage({super.key});
@@ -9,6 +9,7 @@ class ReservasProveedorPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reservasAsync = ref.watch(reservasProveedorProvider);
+    //final reservasNotifier = ref.read(reservasProveedorProvider.notifier); //Uso posterior
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reservas recibidas')),

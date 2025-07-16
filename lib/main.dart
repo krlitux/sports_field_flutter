@@ -19,9 +19,6 @@ class MyApp extends ConsumerWidget {
     return FutureBuilder(
       future: authRepo.getToken(),
       builder: (context, snapshot) {
-        //print('📦 Snapshot state: ${snapshot.connectionState}');
-        //print('📦 Snapshot data: ${snapshot.data}');
-        //print('📦 Snapshot error: ${snapshot.error}');
 
         if (snapshot.connectionState != ConnectionState.done) {
           return const MaterialApp(
@@ -35,11 +32,9 @@ class MyApp extends ConsumerWidget {
           final payload = JwtDecoder.decode(token);
           final tipo = payload['rol'] ?? 'desconocido';
 
-          //print('✅ Usuario autenticado como: $tipo');
           return MaterialApp(home: HomePage(tipoUsuario: tipo));
         }
 
-        //print('⚠️ Token no válido, se redirige a login.');
         return const MaterialApp(home: LoginPage());
       },
     );

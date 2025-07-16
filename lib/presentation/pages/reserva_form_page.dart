@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:sports_field_app/data/models/cancha_model.dart';
 import 'package:sports_field_app/data/models/reserva_request_model.dart';
 import 'package:sports_field_app/presentation/providers/auth_provider.dart';
-//import 'package:sports_field_app/presentation/providers/reserva_jugador_provider.dart';
+import 'package:sports_field_app/presentation/providers/reserva_jugador_provider.dart';
 
 class ReservaFormPage extends ConsumerStatefulWidget {
   final CanchaModel cancha;
@@ -80,7 +80,7 @@ class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
 
     final usuarioId = await ref.read(authRepositoryProvider).getUserId();
 
-    final request = ReservaRequestModel(
+    final reserva = ReservaRequestModel(
       usuario_id: int.parse(usuarioId ?? '0'),
       cancha_id: widget.cancha.id,
       fecha: DateFormat('yyyy-MM-dd').format(fecha!),
@@ -89,8 +89,7 @@ class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
     );
 
     try {
-      final repo = ref.read(reservaRepositoryProvider);
-      await repo.reservar(request);
+      await ref.read(misReservasProvider.notifier).reservar(reserva);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

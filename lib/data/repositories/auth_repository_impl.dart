@@ -21,7 +21,6 @@ class AuthRepository {
     final tipo = endpoint.contains('proveedores') ? 'proveedor' : 'jugador';
 
     await _storage.write(key: 'jwt', value: token);
-    //await _storage.write(key: 'tipo_usuario', value: tipoUsuario); // 👈 nuevo
     await _storage.write(key: 'tipo_usuario', value: tipo);
   }
 

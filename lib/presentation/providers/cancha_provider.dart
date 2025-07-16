@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/data/models/cancha_model.dart';
 import 'package:sports_field_app/data/models/cancha_request_model.dart';
 import 'package:sports_field_app/data/repositories/cancha_repository.dart';
-import 'auth_provider.dart';
+import 'package:sports_field_app/presentation/providers/auth_provider.dart';
 
 final canchasDisponiblesProvider = FutureProvider<List<CanchaModel>>((ref) async {
   final repo = ref.read(canchaRepositoryProvider);

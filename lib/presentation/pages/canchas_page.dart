@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sports_field_app/data/models/cancha_model.dart';
 import 'package:sports_field_app/presentation/pages/reserva_form_page.dart';
 import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
 

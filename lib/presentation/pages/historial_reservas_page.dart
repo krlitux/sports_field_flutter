@@ -44,13 +44,14 @@ class HistorialReservasPage extends ConsumerWidget {
                       Text('📅 $f'),
                       Text('🕒 $hInicio - $hFin'),
                       Text('📍 ${r.cancha.direccion}', style: const TextStyle(color: Colors.grey)),
-                      TextButton(
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
                         onPressed: () async {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('¿Cancelar reserva?'),
-                              content: const Text('Esta acción no se puede deshacer.'),
+                              title: const Text('Cancelar reserva'),
+                              content: const Text('¿Estás seguro de cancelar esta reserva?'),
                               actions: [
                                 TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
                                 TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sí')),
@@ -58,21 +59,15 @@ class HistorialReservasPage extends ConsumerWidget {
                             ),
                           );
 
-                          if (confirm == true) {
-                            try {
-                              await ref.read(misReservasProvider.notifier).cancelarReserva(r.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Reserva cancelada ✅')),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Error al cancelar ❌')),
-                              );
-                            }
-                          }
+                          if (confirm != true) return;
+
+                          final notifier = ref.read(misReservasProvider.notifier);
+                          await notifier.cancelarReserva(r.id);
                         },
-                        child: const Text('Cancelar reserva', style: TextStyle(color: Colors.red)),
-                      )
+                        icon: const Icon(Icons.cancel_outlined),
+                        label: const Text('Cancelar'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600]),
+                      ),
                     ],
                   ),
                 ),
