@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sports_field_app/data/models/cancha_model.dart';
-import 'package:sports_field_app/data/models/cancha_request_model.dart';
-import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
+import 'package:sports_field_app/domain/entities/cancha.dart';
+import 'package:sports_field_app/presentation/features/canchas/provider/mis_canchas_notifier.dart';
 
 class EditarCanchaPage extends ConsumerStatefulWidget {
-  final CanchaModel cancha;
+  final Cancha cancha;
 
   const EditarCanchaPage({super.key, required this.cancha});
 
@@ -32,7 +31,8 @@ class _EditarCanchaPageState extends ConsumerState<EditarCanchaPage> {
   void guardar() async {
     setState(() => cargando = true);
 
-    final canchaEditada = CanchaRequestModel(
+    final canchaEditada = Cancha(
+      id: widget.cancha.id,
       nombre: nombreCtrl.text,
       direccion: direccionCtrl.text,
       tipo: tipo,
@@ -41,7 +41,7 @@ class _EditarCanchaPageState extends ConsumerState<EditarCanchaPage> {
 
     await ref
         .read(misCanchasProvider.notifier)
-        .editarCancha(widget.cancha.id, canchaEditada);
+        .editar(widget.cancha.id, canchaEditada);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

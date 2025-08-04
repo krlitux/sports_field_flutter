@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sports_field_app/data/models/cancha_model.dart';
-import 'package:sports_field_app/data/models/reserva_request_model.dart';
-import 'package:sports_field_app/presentation/providers/auth_provider.dart';
-import 'package:sports_field_app/presentation/providers/reserva_jugador_provider.dart';
+import 'package:sports_field_app/domain/entities/reserva.dart';
+import 'package:sports_field_app/presentation/features/auth/provider/auth_repository_provider.dart';
+import 'package:sports_field_app/domain/usecases/reservas/crear_reserva_usecase.dart';
+import 'package:sports_field_app/domain/entities/cancha.dart';
 
 class ReservaFormPage extends ConsumerStatefulWidget {
-  final CanchaModel cancha;
+  final Cancha cancha;
 
   const ReservaFormPage({super.key, required this.cancha});
 
@@ -80,17 +80,21 @@ class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
 
     final usuarioId = await ref.read(authRepositoryProvider).getUserId();
 
-    final reserva = ReservaRequestModel(
-      usuario_id: int.parse(usuarioId ?? '0'),
-      cancha_id: widget.cancha.id,
+    final reserva = Reserva(
+      id: 0, // será ignorado por el backend
+      usuarioId: int.parse(usuarioId ?? '0'),
+      canchaId: widget.cancha.id,
       fecha: DateFormat('yyyy-MM-dd').format(fecha!),
-      hora_inicio: horaInicio!.format(context),
-      hora_fin: horaFin!.format(context),
+      horaInicio: horaInicio!.format(context),
+      horaFin: horaFin!.format(context),
     );
 
+    final crearReserva = ref.read(crearReservaUseCaseProvider);
+
     try {
-      await ref.read(misReservasProvider.notifier).reservar(reserva);
+      await crearReserva(reserva);
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('✅ Reserva realizada con éxito'),
@@ -98,6 +102,7 @@ class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
           duration: Duration(seconds: 2),
         ),
       );
+
       await Future.delayed(const Duration(milliseconds: 500));
       Navigator.pop(context, true);
 
@@ -175,7 +180,9 @@ class _ReservaFormPageState extends ConsumerState<ReservaFormPage> {
               icon: const Icon(Icons.check_circle_outline),
               label: cargando
                   ? const SizedBox(
-                  height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Confirmar reserva'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),

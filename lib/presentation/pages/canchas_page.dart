@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sports_field_app/presentation/pages/reserva_form_page.dart';
-import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
+import 'package:sports_field_app/presentation/features/reservas/pages/reserva_form_page.dart';
+import 'package:sports_field_app/presentation/features/canchas/provider/canchas_disponibles_provider.dart';
 
 class CanchasPage extends ConsumerWidget {
   const CanchasPage({super.key});

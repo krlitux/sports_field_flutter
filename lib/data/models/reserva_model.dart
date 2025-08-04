@@ -1,5 +1,7 @@
 class ReservaModel {
   final int id;
+  final int usuarioId;
+  final int canchaId;
   final String fecha;
   final String horaInicio;
   final String horaFin;
@@ -8,6 +10,8 @@ class ReservaModel {
 
   ReservaModel({
     required this.id,
+    required this.usuarioId,
+    required this.canchaId,
     required this.fecha,
     required this.horaInicio,
     required this.horaFin,
@@ -18,6 +22,8 @@ class ReservaModel {
   factory ReservaModel.fromJson(Map<String, dynamic> json) {
     return ReservaModel(
       id: json['id'] ?? 0,
+      usuarioId: json['usuario_id'] ?? 0,
+      canchaId: json['cancha_id'] ?? 0,
       fecha: json['fecha'],
       horaInicio: json['hora_inicio'],
       horaFin: json['hora_fin'],

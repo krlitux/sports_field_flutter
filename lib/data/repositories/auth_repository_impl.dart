@@ -2,12 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:sports_field_app/data/models/login_request_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:sports_field_app/domain/repositories/auth_repository.dart';
 
-class AuthRepository {
+class AuthRepositoryImpl implements AuthRepository {
   final Dio _dio;
   final FlutterSecureStorage _storage;
 
-  AuthRepository(this._dio, this._storage);
+  AuthRepositoryImpl(this._dio, this._storage);
 
   Future<void> login(LoginRequestModel data, String tipoUsuario) async {
     final endpoint = tipoUsuario == 'jugador'

@@ -1,39 +1,71 @@
 import 'package:sports_field_app/data/clients/auth_dio.dart';
 import 'package:sports_field_app/data/models/cancha_model.dart';
 import 'package:sports_field_app/data/models/cancha_request_model.dart';
+import 'package:sports_field_app/domain/entities/cancha.dart';
+import 'package:sports_field_app/domain/repositories/cancha_repository.dart';
 
-class CanchaRepository {
+class CanchaRepositoryImpl implements CanchaRepository {
   final AuthDio _authDio;
 
-  CanchaRepository(this._authDio);
+  CanchaRepositoryImpl(this._authDio);
 
-  Future<List<CanchaModel>> listarCanchas() async {
+  @override
+  Future<List<Cancha>> listarCanchas() async {
     final dio = await _authDio.client;
     final resp = await dio.get('/api/canchas/disponibles');
-    final list = resp.data as List;
-    return list.map((e) => CanchaModel.fromJson(e)).toList();
+    final data = resp.data as List;
+
+    return data.map((e) {
+      final model = CanchaModel.fromJson(e);
+      return Cancha(
+        id: model.id,
+        nombre: model.nombre,
+        direccion: model.direccion,
+        precio: model.precio,
+        tipo: model.tipo,
+      );
+    }).toList();
   }
 
-  Future<void> crearCancha(CanchaRequestModel cancha) async {
-    final dio = await _authDio.client;
-    await dio.post('/api/canchas', data: cancha.toJson());
-  }
-
-  Future<List<CanchaModel>> misCanchas() async {
+  @override
+  Future<List<Cancha>> misCanchas() async {
     final dio = await _authDio.client;
     final resp = await dio.get('/api/canchas/mis-canchas');
-    final list = resp.data as List;
-    return list.map((e) => CanchaModel.fromJson(e)).toList();
+    final data = resp.data as List;
+
+    return data.map((e) {
+      final model = CanchaModel.fromJson(e);
+      return Cancha(
+        id: model.id,
+        nombre: model.nombre,
+        direccion: model.direccion,
+        precio: model.precio,
+        tipo: model.tipo,
+      );
+    }).toList();
   }
 
-  Future<void> editarCancha(int id, CanchaRequestModel cancha) async {
+  @override
+  Future<void> crearCancha(Cancha cancha) async {
     final dio = await _authDio.client;
-    await dio.put('/api/canchas/$id', data: cancha.toJson());
+    final data = CanchaRequestModel(
+      nombre: cancha.nombre,
+      direccion: cancha.direccion,
+      tipo: cancha.tipo,
+      precio: cancha.precio,
+    );
+    await dio.post('/api/canchas', data: data.toJson());
   }
 
-  Future<void> eliminarCancha(int id) async {
+  @override
+  Future<void> editarCancha(int id, Cancha cancha) async {
     final dio = await _authDio.client;
-    await dio.delete('/api/canchas/$id');
+    final data = CanchaRequestModel(
+      nombre: cancha.nombre,
+      direccion: cancha.direccion,
+      tipo: cancha.tipo,
+      precio: cancha.precio,
+    );
+    await dio.put('/api/canchas/$id', data: data.toJson());
   }
-
 }

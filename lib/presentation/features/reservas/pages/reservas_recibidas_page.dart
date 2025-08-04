@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sports_field_app/presentation/providers/reserva_proveedor_provider.dart';
+import 'package:sports_field_app/presentation/features/reservas/providers/reservas_recibidas_provider.dart';
 
 class ReservasProveedorPage extends ConsumerWidget {
   const ReservasProveedorPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final reservasAsync = ref.watch(reservasProveedorProvider);
-    //final reservasNotifier = ref.read(reservasProveedorProvider.notifier); //Uso posterior
+    final reservasAsync = ref.watch(reservasRecibidasProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reservas recibidas')),
@@ -36,14 +35,14 @@ class ReservasProveedorPage extends ConsumerWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
-                  title: Text(r.usuario?.nombre ?? 'Usuario', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(r.nombreUsuario ?? 'Usuario', style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 6),
                       Text('📅 $f'),
                       Text('🕒 $hInicio - $hFin'),
-                      Text('📍 ${r.cancha?.nombre ?? '-'} (${r.cancha?.direccion ?? ''})'),
+                      Text('📍 ${r.nombreCancha ?? '-'} (${r.direccionCancha ?? ''})'),
                     ],
                   ),
                 ),

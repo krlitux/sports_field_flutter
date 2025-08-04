@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_field_app/presentation/pages/editar_cancha_page.dart';
-import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
+import 'package:sports_field_app/presentation/features/canchas/provider/mis_canchas_notifier.dart';
 
 class MisCanchasPage extends ConsumerWidget {
   const MisCanchasPage({super.key});

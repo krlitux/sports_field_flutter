@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sports_field_app/data/models/cancha_request_model.dart';
-import 'package:sports_field_app/presentation/providers/cancha_provider.dart';
+import 'package:sports_field_app/presentation/features/canchas/provider/mis_canchas_notifier.dart';
+import 'package:sports_field_app/domain/entities/cancha.dart';
 
 class CrearCanchaPage extends ConsumerStatefulWidget {
   const CrearCanchaPage({super.key});
@@ -19,14 +19,16 @@ class _CrearCanchaPageState extends ConsumerState<CrearCanchaPage> {
 
   void guardar() async {
     setState(() => cargando = true);
-    final cancha = CanchaRequestModel(
+
+    final cancha = Cancha(
+      id: 0, // ID temporal, lo asignará el backend
       nombre: nombreCtrl.text,
       direccion: direccionCtrl.text,
       tipo: tipo,
       precio: double.tryParse(precioCtrl.text) ?? 0,
     );
 
-    await ref.read(misCanchasProvider.notifier).crearCancha(cancha);
+    await ref.read(misCanchasProvider.notifier).crear(cancha);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -35,6 +37,7 @@ class _CrearCanchaPageState extends ConsumerState<CrearCanchaPage> {
       Navigator.pop(context);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
